@@ -11,7 +11,7 @@
       height: 100%;
       width: 100%;
       overflow: hidden;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
     }
     body {
       color: #fff;
@@ -27,48 +27,50 @@
     .container {
       position: relative;
       z-index: 2;
+      min-height: 100vh;
+      min-width: 100vw;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      text-shadow: 0 2px 10px #0008;
+      text-align: center;
+      padding: 0 10px;
     }
     .yuleczka {
-      font-size: 2.2rem;
-      margin-bottom: 16px;
+      font-size: 2rem;
+      margin-bottom: 18px;
       letter-spacing: 1px;
       color: #fff0f6;
-      text-align: center;
+      text-shadow: 0 2px 10px #c74a7fbb, 0 1px 0 #4449;
+      font-weight: 600;
     }
     .serca {
       font-size: 2rem;
       color: #f95c88;
+      margin-left: 5px;
     }
     .desc {
-      font-size: 1.15rem;
-      margin-bottom: 8px;
-      opacity: 0.88;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      opacity: 0.95;
+      color: #ffdde2;
+      font-weight: 400;
     }
     .timer {
-      font-size: 2.2rem;
-      margin: 16px 0;
+      font-size: 2rem;
+      margin: 20px 0 0 0;
+      font-weight: 500;
+      text-shadow: 0 2px 8px #0006;
     }
-    .footer {
-      position: fixed;
-      bottom: 15px;
-      width: 100%;
-      text-align: center;
-      font-size: 1rem;
-      opacity: 0.5;
-      z-index: 2;
+    @media (max-width: 600px) {
+      .yuleczka { font-size: 1.25rem; }
+      .desc { font-size: 0.93rem; }
+      .timer { font-size: 1.15rem; }
     }
     #heart-canvas {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       pointer-events: auto;
       z-index: 1;
       touch-action: none;
@@ -81,25 +83,22 @@
   <div class="yuleczka">
     Nie mogę się doczekać, Yuleczko! <span class="serca">❤️❤️❤️</span>
   </div>
-  <div class="desc">Czas do <b>połowy lipca</b> (12 lipca 2025)</div>
-  <div id="timer" class="timer"></div>
-  <div class="footer">
-    Odliczanie do 12 lipca 2025 &bull; <span id="now"></span>
+  <div class="desc">
+    Czas do <b>połowy lipca</b> (12 lipca 2025)
   </div>
+  <div id="timer" class="timer"></div>
 </div>
 <script>
-  // Ustawienia dat
+  // Daty do odliczania
   const endDate = new Date('2025-07-12T00:00:00');
   const startDate = new Date('2025-05-14T00:00:00');
-
-  let heartsAmount = 20; // Startowa ilość serduszek
+  let heartsAmount = 20;
 
   function updateTimer() {
     const now = new Date();
     const diff = endDate - now;
     if (diff <= 0) {
       document.getElementById('timer').innerText = "Czas minął!";
-      document.getElementById('now').innerText = now.toLocaleString();
       heartsAmount = 100;
       return;
     }
@@ -109,7 +108,6 @@
     const secs = Math.floor((diff / 1000) % 60);
     document.getElementById('timer').innerText =
             `${days} dni, ${hours} godzin, ${mins} min, ${secs} sek`;
-    document.getElementById('now').innerText = now.toLocaleString();
     // Zmienna liczba serduszek
     const totalDuration = endDate - startDate;
     const passed = totalDuration - diff;
@@ -118,7 +116,7 @@
   setInterval(updateTimer, 1000);
   updateTimer();
 
-  // --- ANIMACJA LATAJĄCYCH I INTERAKTYWNYCH SERC ---
+  // --- ANIMACJA SERC ---
   function drawHeart(ctx, x, y, size, color, alpha, angle=0) {
     ctx.save();
     ctx.translate(x, y);
@@ -173,19 +171,10 @@
   function animateHearts() {
     const canvas = document.getElementById('heart-canvas');
     const ctx = canvas.getContext('2d');
-    // Pełny ekran
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    // Dodawaj serca do zadanej liczby
-    while (hearts.length < heartsAmount) {
-      hearts.push(randomHeart(canvas.width, canvas.height));
-    }
-    // Usuwaj jeśli za dużo
-    if (hearts.length > heartsAmount) {
-      hearts = hearts.slice(0, heartsAmount);
-    }
-
+    while (hearts.length < heartsAmount) hearts.push(randomHeart(canvas.width, canvas.height));
+    if (hearts.length > heartsAmount) hearts = hearts.slice(0, heartsAmount);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let heart of hearts) {
       drawHeart(ctx, heart.x, heart.y, heart.size * 16, "#ff4f79", heart.alpha, heart.angle);
@@ -193,7 +182,6 @@
       heart.x += heart.speedX;
       heart.angle += heart.spin;
       if (heart.y > canvas.height + 20) {
-        // Reset serduszka na górze
         heart.y = -20;
         heart.x = Math.random() * canvas.width;
         heart.size = 0.6 + Math.random() * 1.4;
@@ -206,7 +194,6 @@
       if (heart.x < -30) heart.x = canvas.width + 30;
       if (heart.x > canvas.width + 30) heart.x = -30;
     }
-
     // Interaktywne serca
     for (let i = interactiveHearts.length-1; i >= 0; i--) {
       let h = interactiveHearts[i];
@@ -214,18 +201,14 @@
       h.x += h.speedX;
       h.y += h.speedY;
       h.angle += h.spin;
-      h.speedY += 0.03; // grawitacja
+      h.speedY += 0.03;
       h.life += 1;
       h.alpha = Math.max(0, 1 - h.life/h.maxLife);
-      if (h.life > h.maxLife) {
-        interactiveHearts.splice(i,1);
-      }
+      if (h.life > h.maxLife) interactiveHearts.splice(i,1);
     }
-
     requestAnimationFrame(animateHearts);
   }
 
-  // Dodawanie serduszek na kliknięcie lub dotyk
   function addInteractiveHeartAtPointer(e) {
     let canvas = document.getElementById('heart-canvas');
     let rect = canvas.getBoundingClientRect();
@@ -244,8 +227,7 @@
   }
 
   document.addEventListener('mousemove', function(e) {
-    if (Math.random() > 0.92)
-      addInteractiveHeartAtPointer(e);
+    if (Math.random() > 0.94) addInteractiveHeartAtPointer(e);
   });
   document.addEventListener('click', addInteractiveHeartAtPointer);
   document.addEventListener('touchmove', addInteractiveHeartAtPointer);
